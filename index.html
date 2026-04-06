@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>BookOrbit – Your Universe of Books</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #050810;
+    --surface: #0d1321;
+    --surface2: #131929;
+    --accent: #f5a623;
+    --accent2: #e8594a;
+    --glow: #4f8ef7;
+    --text: #e8eaf0;
+    --muted: #6b7a99;
+    --border: rgba(255,255,255,0.07);
+    --card-bg: rgba(255,255,255,0.04);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* Custom cursor */
+  .cursor {
+    width: 12px; height: 12px;
+    background: var(--accent);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    transition: transform 0.1s ease;
+    mix-blend-mode: difference;
+  }
+  .cursor-ring {
+    width: 36px; height: 36px;
+    border: 1.5px solid var(--accent);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 9998;
+    transition: all 0.18s ease;
+    opacity: 0.5;
+  }
+
+  /* Stars background */
+  .stars {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .star {
+    position: absolute;
+    background: white;
+    border-radius: 50%;
+    animation: twinkle var(--dur) infinite ease-in-out;
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.1; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.3); }
+  }
+
+  /* Navbar */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 5%;
+    background: rgba(5, 8, 16, 0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+  }
+  .logo-icon {
+    width: 38px; height: 38px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    box-shadow: 0 0 20px rgba(245,166,35,0.4);
+  }
+  .logo-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--text);
+    letter-spacing: -0.5px;
+  }
+  .logo-text span { color: var(--accent); }
+
+  .nav-links {
+    display: flex;
+    gap: 32px;
+    list-style: none;
+  }
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--text); }
+
+  .nav-cta {
+    background: var(--accent);
+    color: #000 !important;
+    padding: 9px 20px;
+    border-radius: 8px;
+    font-weight: 600 !important;
+  }
+  .nav-cta:hover { background: #ffc14a; color: #000 !important; }
+
+  /* Hero */
+  .hero {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 100px 5% 60px;
+    overflow: hidden;
+  }
+
+  .hero-orbit {
+    position: absolute;
+    border: 1px solid rgba(79,142,247,0.12);
+    border-radius: 50%;
+    animation: orbit-spin linear infinite;
+  }
+  .orbit-1 { width: 320px; height: 320px; animation-duration: 18s; }
+  .orbit-2 { width: 520px; height: 520px; animation-duration: 28s; border-color: rgba(245,166,35,0.08); }
+  .orbit-3 { width: 720px; height: 720px; animation-duration: 40s; animation-direction: reverse; }
+
+  @keyframes orbit-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+  .orbit-dot {
+    position: absolute;
+    width: 8px; height: 8px;
+    background: var(--glow);
+    border-radius: 50%;
+    top: -4px; left: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 0 10px var(--glow);
+  }
+  .orbit-dot.gold { background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+  .orbit-dot.red { background: var(--accent2); box-shadow: 0 0 10px var(--accent2); }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(79,142,247,0.1);
+    border: 1px solid rgba(79,142,247,0.25);
+    border-radius: 100px;
+    padding: 6px 16px;
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--glow);
+    letter-spacing: 1px;
+    margin-bottom: 28px;
+    animation: fadeUp 0.8s ease forwards;
+  }
+
+  .hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(48px, 8vw, 96px);
+    font-weight: 900;
+    line-height: 1.0;
+    letter-spacing: -2px;
+    margin-bottom: 20px;
+    animation: fadeUp 0.8s ease 0.1s both;
+  }
+  .hero-title .line2 {
+    display: block;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-style: italic;
+  }
+
+  .hero-sub {
+    font-size: 17px;
+    color: var(--muted);
+    max-width: 520px;
+    line-height: 1.7;
+    margin-bottom: 40px;
+    animation: fadeUp 0.8s ease 0.2s both;
+  }
+
+  .hero-btns {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    flex-wrap: wrap;
+    animation: fadeUp 0.8s ease 0.3s both;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    border: none;
+    padding: 14px 32px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: none;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 24px rgba(245,166,35,0.3);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(245,166,35,0.4); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 14px 32px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: none;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .btn-ghost:hover { border-color: rgba(255,255,255,0.25); background: rgba(255,255,255,0.04); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Stats bar */
+  .stats-bar {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    margin: 0 5%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .stat-item {
+    flex: 1;
+    padding: 28px 20px;
+    text-align: center;
+    border-right: 1px solid var(--border);
+  }
+  .stat-item:last-child { border-right: none; }
+  .stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--accent);
+    display: block;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .stat-label { font-size: 13px; color: var(--muted); }
+
+  /* Section styles */
+  section { position: relative; z-index: 2; padding: 90px 5%; }
+
+  .section-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .section-tag::before {
+    content: '';
+    width: 20px; height: 1px;
+    background: var(--accent);
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(32px, 4vw, 52px);
+    font-weight: 900;
+    letter-spacing: -1px;
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+  .section-sub { color: var(--muted); font-size: 16px; max-width: 480px; line-height: 1.7; margin-bottom: 50px; }
+
+  /* Categories */
+  .cats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+    margin-bottom: 60px;
+  }
+  .cat-chip {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+    cursor: none;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+  .cat-chip::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    transform: scaleX(0);
+    transition: transform 0.3s;
+  }
+  .cat-chip:hover { border-color: rgba(245,166,35,0.3); transform: translateY(-3px); }
+  .cat-chip:hover::before { transform: scaleX(1); }
+  .cat-chip.active { border-color: rgba(245,166,35,0.5); background: rgba(245,166,35,0.06); }
+  .cat-chip.active::before { transform: scaleX(1); }
+  .cat-emoji { font-size: 24px; margin-bottom: 8px; display: block; }
+  .cat-name { font-size: 13px; font-weight: 500; color: var(--text); }
+
+  /* Books grid */
+  .books-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 22px;
+  }
+
+  .book-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.3s;
+    position: relative;
+    group: true;
+  }
+  .book-card:hover { transform: translateY(-5px); border-color: rgba(245,166,35,0.25); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+
+  .book-cover {
+    height: 200px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 60px;
+  }
+  .book-cover-bg {
+    position: absolute;
+    inset: 0;
+    opacity: 0.15;
+  }
+
+  .book-badge {
+    position: absolute;
+    top: 12px; right: 12px;
+    padding: 4px 10px;
+    border-radius: 100px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .badge-trending { background: rgba(245,166,35,0.2); color: var(--accent); border: 1px solid rgba(245,166,35,0.3); }
+  .badge-new { background: rgba(79,142,247,0.2); color: var(--glow); border: 1px solid rgba(79,142,247,0.3); }
+  .badge-hindi { background: rgba(232,89,74,0.2); color: var(--accent2); border: 1px solid rgba(232,89,74,0.3); }
+
+  .book-info { padding: 18px; }
+  .book-cat { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; font-family: 'JetBrains Mono', monospace; }
+  .book-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; line-height: 1.3; }
+  .book-author { font-size: 12px; color: var(--muted); margin-bottom: 14px; }
+  .book-footer { display: flex; align-items: center; justify-content: space-between; }
+  .book-price { font-size: 16px; font-weight: 700; color: var(--accent); }
+  .book-price .original { font-size: 12px; color: var(--muted); text-decoration: line-through; margin-left: 6px; font-weight: 400; }
+
+  .buy-btn {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    border: none;
+    padding: 7px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: none;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: opacity 0.2s;
+  }
+  .buy-btn:hover { opacity: 0.85; }
+
+  /* Platform badges */
+  .platform-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  .platform-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 7px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: opacity 0.2s;
+    cursor: none;
+  }
+  .platform-btn:hover { opacity: 0.8; }
+  .amazon-btn { background: #FF9900; color: #000; }
+  .flipkart-btn { background: #2874f0; color: #fff; }
+
+  /* How it works */
+  .how-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 24px;
+  }
+  .how-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .how-card::after {
+    content: attr(data-num);
+    position: absolute;
+    right: 16px; top: 16px;
+    font-size: 64px;
+    font-family: 'Playfair Display', serif;
+    font-weight: 900;
+    color: rgba(255,255,255,0.03);
+    line-height: 1;
+  }
+  .how-icon {
+    width: 48px; height: 48px;
+    background: linear-gradient(135deg, rgba(245,166,35,0.15), rgba(232,89,74,0.15));
+    border: 1px solid rgba(245,166,35,0.2);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    margin-bottom: 20px;
+  }
+  .how-title { font-size: 17px; font-weight: 600; margin-bottom: 10px; }
+  .how-desc { font-size: 14px; color: var(--muted); line-height: 1.65; }
+
+  /* Newsletter / CTA banner */
+  .cta-banner {
+    background: linear-gradient(135deg, rgba(245,166,35,0.08), rgba(232,89,74,0.08));
+    border: 1px solid rgba(245,166,35,0.2);
+    border-radius: 24px;
+    padding: 60px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .cta-banner::before {
+    content: '📚';
+    position: absolute;
+    font-size: 200px;
+    opacity: 0.04;
+    left: -40px; top: -40px;
+    transform: rotate(-20deg);
+  }
+  .cta-banner::after {
+    content: '🚀';
+    position: absolute;
+    font-size: 180px;
+    opacity: 0.04;
+    right: -30px; bottom: -30px;
+    transform: rotate(15deg);
+  }
+  .cta-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 4vw, 44px);
+    font-weight: 900;
+    margin-bottom: 14px;
+    letter-spacing: -1px;
+  }
+  .cta-sub { color: var(--muted); font-size: 16px; margin-bottom: 32px; }
+  .search-bar {
+    display: flex;
+    gap: 10px;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+  .search-input {
+    flex: 1;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 18px;
+    color: var(--text);
+    font-size: 14px;
+    font-family: 'Space Grotesk', sans-serif;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .search-input::placeholder { color: var(--muted); }
+  .search-input:focus { border-color: rgba(245,166,35,0.4); }
+
+  /* Footer */
+  footer {
+    position: relative;
+    z-index: 2;
+    border-top: 1px solid var(--border);
+    padding: 50px 5% 30px;
+  }
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 40px;
+    margin-bottom: 40px;
+  }
+  .footer-brand .logo-text { font-size: 26px; display: block; margin-bottom: 14px; }
+  .footer-desc { color: var(--muted); font-size: 14px; line-height: 1.7; max-width: 280px; }
+  .footer-heading { font-size: 12px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 18px; }
+  .footer-links { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .footer-links a { color: var(--muted); text-decoration: none; font-size: 14px; transition: color 0.2s; }
+  .footer-links a:hover { color: var(--text); }
+  .footer-bottom { display: flex; justify-content: space-between; align-items: center; padding-top: 28px; border-top: 1px solid var(--border); font-size: 13px; color: var(--muted); }
+
+  .social-links { display: flex; gap: 12px; }
+  .social-btn {
+    width: 36px; height: 36px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    text-decoration: none;
+    transition: border-color 0.2s, background 0.2s;
+    cursor: none;
+  }
+  .social-btn:hover { border-color: rgba(245,166,35,0.4); background: rgba(245,166,35,0.06); }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .nav-links { display: none; }
+    .stats-bar { flex-direction: column; }
+    .stat-item { border-right: none; border-bottom: 1px solid var(--border); }
+    .footer-grid { grid-template-columns: 1fr; }
+    .cta-banner { padding: 40px 24px; }
+    .search-bar { flex-direction: column; }
+    .footer-bottom { flex-direction: column; gap: 16px; text-align: center; }
+    body { cursor: auto; }
+    .cursor, .cursor-ring { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- Stars -->
+<div class="stars" id="stars"></div>
+
+<!-- Navbar -->
+<nav>
+  <a href="#" class="logo">
+    <div class="logo-icon">🪐</div>
+    <span class="logo-text">Book<span>Orbit</span></span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#books">Books</a></li>
+    <li><a href="#categories">Categories</a></li>
+    <li><a href="#how">How it Works</a></li>
+    <li><a href="#books" class="nav-cta">Explore Now</a></li>
+  </ul>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-orbit orbit-1">
+    <div class="orbit-dot gold"></div>
+  </div>
+  <div class="hero-orbit orbit-2">
+    <div class="orbit-dot"></div>
+  </div>
+  <div class="hero-orbit orbit-3">
+    <div class="orbit-dot red"></div>
+  </div>
+
+  <div class="hero-badge">🪐 YOUR READING UNIVERSE AWAITS</div>
+  <h1 class="hero-title">
+    Explore Every<br/>
+    <span class="line2">Book in Orbit</span>
+  </h1>
+  <p class="hero-sub">Thousands of books — self-help, novels, exam prep, Hindi & English — all curated in one place. Best deals from Amazon & Flipkart.</p>
+  <div class="hero-btns">
+    <a href="#books" class="btn-primary">🚀 Explore Books</a>
+    <a href="#how" class="btn-ghost">How it Works →</a>
+  </div>
+</section>
+
+<!-- Stats -->
+<div class="stats-bar">
+  <div class="stat-item">
+    <span class="stat-num">10K+</span>
+    <span class="stat-label">Books Listed</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-num">2</span>
+    <span class="stat-label">Trusted Platforms</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-num">Hindi + English</span>
+    <span class="stat-label">Bilingual Collection</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-num">Best Price</span>
+    <span class="stat-label">Guaranteed Deals</span>
+  </div>
+</div>
+
+<!-- Categories -->
+<section id="categories">
+  <div class="section-tag">Browse by Genre</div>
+  <h2 class="section-title">Find Your Orbit</h2>
+  <p class="section-sub">From competitive exam prep to captivating fiction — we've got every genre covered.</p>
+
+  <div class="cats-grid">
+    <div class="cat-chip active" onclick="filterBooks('all')">
+      <span class="cat-emoji">🌌</span>
+      <span class="cat-name">All Books</span>
+    </div>
+    <div class="cat-chip" onclick="filterBooks('self-help')">
+      <span class="cat-emoji">💡</span>
+      <span class="cat-name">Self Help</span>
+    </div>
+    <div class="cat-chip" onclick="filterBooks('exam')">
+      <span class="cat-emoji">📝</span>
+      <span class="cat-name">Exam Prep</span>
+    </div>
+    <div class="cat-chip" onclick="filterBooks('fiction')">
+      <span class="cat-emoji">🌙</span>
+      <span class="cat-name">Fiction</span>
+    </div>
+    <div class="cat-chip" onclick="filterBooks('hindi')">
+      <span class="cat-emoji">🇮🇳</span>
+      <span class="cat-name">Hindi Books</span>
+    </div>
+    <div class="cat-chip" onclick="filterBooks('business')">
+      <span class="cat-emoji">📈</span>
+      <span class="cat-name">Business</span>
+    </div>
+    <div class="cat-chip" onclick="filterBooks('science')">
+      <span class="cat-emoji">🔭</span>
+      <span class="cat-name">Science</span>
+    </div>
+    <div class="cat-chip" onclick="filterBooks('children')">
+      <span class="cat-emoji">🧸</span>
+      <span class="cat-name">Children</span>
+    </div>
+  </div>
+</section>
+
+<!-- Books -->
+<section id="books" style="padding-top:0;">
+  <div class="books-grid" id="booksGrid">
+
+    <!-- Book 1 -->
+    <div class="book-card" data-cat="self-help">
+      <div class="book-cover" style="background: linear-gradient(135deg,#1a1a2e,#16213e);">
+        <span>🧠</span>
+        <span class="book-badge badge-trending">TRENDING</span>
+      </div>
+      <div class="book-info">
+        <div class="book-cat">Self Help</div>
+        <div class="book-title">Atomic Habits</div>
+        <div class="book-author">James Clear</div>
+        <div class="book-footer">
+          <div class="book-price">₹399 <span class="original">₹599</span></div>
+        </div>
+        <div class="platform-row">
+          <a href="#" class="platform-btn amazon-btn">Amazon</a>
+          <a href="#" class="platform-btn flipkart-btn">Flipkart</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Book 2 -->
+    <div class="book-card" data-cat="business">
+      <div class="book-cover" style="background: linear-gradient(135deg,#0f2027,#203a43);">
+        <span>💰</span>
+        <span class="book-badge badge-new">NEW</span>
+      </div>
+      <div class="book-info">
+        <div class="book-cat">Business</div>
+        <div class="book-title">Rich Dad Poor Dad</div>
+        <div class="book-author">Robert Kiyosaki</div>
+        <div class="book-footer">
+          <div class="book-price">₹299 <span class="original">₹450</span></div>
+        </div>
+        <div class="platform-row">
+          <a href="#" class="platform-btn amazon-btn">Amazon</a>
+          <a href="#" class="platform-btn flipkart-btn">Flipkart</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Book 3 -->
+    <div class="book-card" data-cat="hindi">
+      <div class="book-cover" style="background: linear-gradient(135deg,#2c0f3a,#420d6e);">
+        <span>📖</span>
+        <span class="book-badge badge-hindi">हिंदी</span>
+      </div>
+      <div class="book-info">
+        <div class="book-cat">Hindi Fiction</div>
+        <div class="book-title">Godan</div>
+        <div class="book-author">Munshi Premchand</div>
+        <div class="book-footer">
+          <div class="book-price">₹199 <span class="original">₹299</span></div>
+        </div>
+        <div class="platform-row">
+          <a href="#" class="platform-btn amazon-btn">Amazon</a>
+          <a href="#" class="platform-btn flipkart-btn">Flipkart</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Book 4 -->
+    <div class="book-card" data-cat="exam">
+      <div class="book-cover" style="background: linear-gradient(135deg,#0a2e0a,#1a5c1a);">
+        <span>🎯</span>
+        <span class="book-badge badge-trending">TRENDING</span>
+      </div>
+      <div class="book-info">
+        <div class="book-cat">Exam Prep</div>
+        <div class="book-title">Quantitative Aptitude</div>
+        <div class="book-author">R.S. Aggarwal</div>
+        <div class="book-footer">
+          <div class="book-price">₹449 <span class="original">₹650</span></div>
+        </div>
+        <div class="platform-row">
+          <a href="#" class="platform-btn amazon-btn">Amazon</a>
+          <a href="#" class="platform-btn flipkart-btn">Flipkart</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Book 5 -->
+    <div class="book-card" data-cat="fiction">
+      <div class="book-cover" style="background: linear-gradient(135deg,#1a0a2e,#2d1b69);">
+        <span>🌙</span>
+        <span class="book-badge badge-new">NEW</span>
+      </div>
+      <div class="book-info">
+        <div class="book-cat">Fiction</div>
+        <div class="book-title">The Alchemist</div>
+        <div class="book-author">Paulo Coelho</div>
+        <div class="book-footer">
+          <div class="book-price">₹249 <span class="original">₹350</span></div>
+        </div>
+        <div class="platform-row">
+          <a href="#" class="platform-btn amazon-btn">Amazon</a>
+          <a href="#" class="platform-btn flipkart-btn">Flipkart</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Book 6 -->
+    <div class="book-card" data-cat="science">
+      <div class="book-cover" style="background: linear-gradient(135deg,#001a2e,#003366);">
+        <span>🔭</span>
+        <span class="book-badge badge-trending">TRENDING</span>
+      </div>
+      <div class="book-info">
+        <div class="book-cat">Science</div>
+        <div class="book-title">A Brief History of Time</div>
+        <div class="book-author">Stephen Hawking</div>
+        <div class="book-footer">
+          <div class="book-price">₹349 <span class="original">₹499</span></div>
+        </div>
+        <div class="platform-row">
+          <a href="#" class="platform-btn amazon-btn">Amazon</a>
+          <a href="#" class="platform-btn flipkart-btn">Flipkart</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Book 7 -->
+    <div class="book-card" data-cat="self-help">
+      <div class="book-cover" style="background: linear-gradient(135deg,#2e1a00,#5c3600);">
+        <span>⚡</span>
+        <span class="book-badge badge-new">NEW</span>
+      </div>
+      <div class="book-info">
+        <div class="book-cat">Self Help</div>
+        <div class="book-title">The Power of Now</div>
+        <div class="book-author">Eckhart Tolle</div>
+        <div class="book-footer">
+          <div class="book-price">₹329 <span class="original">₹480</span></div>
+        </div>
+        <div class="platform-row">
+          <a href="#" class="platform-btn amazon-btn">Amazon</a>
+          <a href="#" class="platform-btn flipkart-btn">Flipkart</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Book 8 -->
+    <div class="book-card" data-cat="hindi">
+      <div class="book-cover" style="background: linear-gradient(135deg,#2e0a0a,#5c1a1a);">
+        <span>🪔</span>
+        <span class="book-badge badge-hindi">हिंदी</span>
+      </div>
+      <div class="book-info">
+        <div class="book-cat">Hindi Self Help</div>
+        <div class="book-title">Lok Vyavhar</div>
+        <div class="book-author">Dale Carnegie (Hindi)</div>
+        <div class="book-footer">
+          <div class="book-price">₹179 <span class="original">₹250</span></div>
+        </div>
+        <div class="platform-row">
+          <a href="#" class="platform-btn amazon-btn">Amazon</a>
+          <a href="#" class="platform-btn flipkart-btn">Flipkart</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- How it works -->
+<section id="how">
+  <div class="section-tag">Simple Process</div>
+  <h2 class="section-title">How BookOrbit Works</h2>
+  <p class="section-sub">Find your book, click the link, buy from trusted platforms. That's it.</p>
+
+  <div class="how-grid">
+    <div class="how-card" data-num="01">
+      <div class="how-icon">🔍</div>
+      <div class="how-title">Browse & Discover</div>
+      <div class="how-desc">Explore thousands of books across all genres — Hindi & English — curated just for Indian readers.</div>
+    </div>
+    <div class="how-card" data-num="02">
+      <div class="how-icon">🔗</div>
+      <div class="how-title">Click Affiliate Link</div>
+      <div class="how-desc">Each book has direct links to Amazon & Flipkart. Click and land on the official product page.</div>
+    </div>
+    <div class="how-card" data-num="03">
+      <div class="how-icon">🛒</div>
+      <div class="how-title">Buy Safely</div>
+      <div class="how-desc">Purchase directly from Amazon or Flipkart. 100% safe, genuine products, fast delivery.</div>
+    </div>
+    <div class="how-card" data-num="04">
+      <div class="how-icon">📚</div>
+      <div class="how-title">Start Reading</div>
+      <div class="how-desc">Your book arrives at your door. Begin your journey — one page at a time.</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Banner -->
+<section>
+  <div class="cta-banner">
+    <h2 class="cta-title">Can't Find Your Book?</h2>
+    <p class="cta-sub">Search from our massive collection of 10,000+ books</p>
+    <div class="search-bar">
+      <input type="text" class="search-input" placeholder="Search books, authors, genres..." />
+      <a href="#" class="btn-primary">Search 🔍</a>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <span class="logo-text">Book<span style="color:var(--accent)">Orbit</span></span>
+      <p class="footer-desc">Your universe of books. Curated deals from Amazon & Flipkart — Hindi & English, all genres, best prices.</p>
+    </div>
+    <div>
+      <div class="footer-heading">Quick Links</div>
+      <ul class="footer-links">
+        <li><a href="#books">All Books</a></li>
+        <li><a href="#categories">Categories</a></li>
+        <li><a href="#how">How it Works</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-heading">Genres</div>
+      <ul class="footer-links">
+        <li><a href="#">Self Help</a></li>
+        <li><a href="#">Exam Prep</a></li>
+        <li><a href="#">Hindi Books</a></li>
+        <li><a href="#">Fiction</a></li>
+        <li><a href="#">Business</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2025 BookOrbit. Affiliate links from Amazon & Flipkart.</span>
+    <div class="social-links">
+      <a href="#" class="social-btn">📸</a>
+      <a href="#" class="social-btn">▶️</a>
+      <a href="#" class="social-btn">🐦</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Cursor
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursorRing');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; cursor.style.left = mx - 6 + 'px'; cursor.style.top = my - 6 + 'px'; });
+  function animRing() { rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12; ring.style.left = rx - 18 + 'px'; ring.style.top = ry - 18 + 'px'; requestAnimationFrame(animRing); }
+  animRing();
+
+  // Stars
+  const starsEl = document.getElementById('stars');
+  for (let i = 0; i < 120; i++) {
+    const s = document.createElement('div');
+    s.classList.add('star');
+    const size = Math.random() * 2.5 + 0.5;
+    s.style.cssText = `width:${size}px;height:${size}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--dur:${2 + Math.random()*4}s;animation-delay:${Math.random()*4}s`;
+    starsEl.appendChild(s);
+  }
+
+  // Category filter
+  function filterBooks(cat) {
+    document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    document.querySelectorAll('.book-card').forEach(card => {
+      if (cat === 'all' || card.dataset.cat === cat) {
+        card.style.display = '';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  }
+</script>
+</body>
+</html>
